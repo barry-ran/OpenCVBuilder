@@ -11,9 +11,6 @@ jobs:
         ver:
           - { cv: 4.11.0, jdk: 8, ant: 1.10.14 }
         list:
-          - { win_ver: 2019, vs_name: vs2015, vs_ver: v140 }
-          - { win_ver: 2019, vs_name: vs2017, vs_ver: v141 }
-          - { win_ver: 2019, vs_name: vs2019, vs_ver: v142 }
           - { win_ver: 2022, vs_name: vs2022, vs_ver: v143 }
         arch:
           [
@@ -26,21 +23,21 @@ jobs:
             md,
             mt,
           ]
-        exclude:
-          - list: { win_ver: 2019, vs_name: vs2015, vs_ver: v140 }
-            arch: arm64
-          - list: { win_ver: 2019, vs_name: vs2017, vs_ver: v141 }
-            arch: arm64
+        build_type:
+          [
+            Release,
+            Debug,
+          ]
 
     runs-on: windows-${{ matrix.list.win_ver }}
 
-    name: windows-${{ matrix.list.vs_name }}-${{ matrix.arch }}-${{ matrix.crt }}
+    name: windows-${{ matrix.list.vs_name }}-${{ matrix.arch }}-${{ matrix.crt }}-${{ matrix.build_type }}
 
     env:
       BUILD_SCRIPT: build-opencv4-win.ps1
       BUILD_OPTIONS: opencv4_cmake_options.txt
-      PKG_NAME: opencv-${{ matrix.ver.cv }}-windows-${{ matrix.list.vs_name }}-${{ matrix.arch }}-${{ matrix.crt }}
-      JAVA_PKG_NAME: opencv-${{ matrix.ver.cv }}-windows-${{ matrix.list.vs_name }}-${{ matrix.arch }}-${{ matrix.crt }}-java
+      PKG_NAME: opencv-${{ matrix.ver.cv }}-windows-${{ matrix.list.vs_name }}-${{ matrix.arch }}-${{ matrix.crt }}-${{ matrix.build_type }}
+      JAVA_PKG_NAME: opencv-${{ matrix.ver.cv }}-windows-${{ matrix.list.vs_name }}-${{ matrix.arch }}-${{ matrix.crt }}-${{ matrix.build_type }}-java
 
     steps:
       # Setup JDK
@@ -84,11 +81,11 @@ jobs:
         shell: powershell
         run: |
           cd opencv-${{ matrix.ver.cv }}
-          .\${{ env.BUILD_SCRIPT }} -VsArch ${{ matrix.arch }} -VsVer ${{ matrix.list.vs_ver }} -VsCRT ${{ matrix.crt }} 
+          .\${{ env.BUILD_SCRIPT }} -VsArch ${{ matrix.arch }} -VsVer ${{ matrix.list.vs_ver }} -VsCRT ${{ matrix.crt }} -BuildType ${{ matrix.build_type }}
 
       - name: 7zip libs
         run: |
-          cp -r opencv-${{ matrix.ver.cv }}/build-${{ matrix.arch }}-${{ matrix.list.vs_ver }}-${{ matrix.crt }}/install ${{ env.PKG_NAME }}
+          cp -r opencv-${{ matrix.ver.cv }}/build-${{ matrix.arch }}-${{ matrix.list.vs_ver }}-${{ matrix.crt }}-${{ matrix.build_type }}/install ${{ env.PKG_NAME }}
           7z a ${{ env.PKG_NAME }}.7z ${{ env.PKG_NAME }}
           rm ${{ env.PKG_NAME }} -r -fo
 
@@ -96,11 +93,11 @@ jobs:
         shell: powershell
         run: |
           cd opencv-${{ matrix.ver.cv }}
-          .\${{ env.BUILD_SCRIPT }} -VsArch ${{ matrix.arch }} -VsVer ${{ matrix.list.vs_ver }} -VsCRT ${{ matrix.crt }} -BuildJava
+          .\${{ env.BUILD_SCRIPT }} -VsArch ${{ matrix.arch }} -VsVer ${{ matrix.list.vs_ver }} -VsCRT ${{ matrix.crt }} -BuildType ${{ matrix.build_type }} -BuildJava
 
       - name: 7zip java
         run: |
-          cp -r opencv-${{ matrix.ver.cv }}/build-${{ matrix.arch }}-${{ matrix.list.vs_ver }}-${{ matrix.crt }}/install/java ${{ env.JAVA_PKG_NAME }}
+          cp -r opencv-${{ matrix.ver.cv }}/build-${{ matrix.arch }}-${{ matrix.list.vs_ver }}-${{ matrix.crt }}-${{ matrix.build_type }}/install/java ${{ env.JAVA_PKG_NAME }}
           7z a ${{ env.JAVA_PKG_NAME }}.7z ${{ env.JAVA_PKG_NAME }}
           rm ${{ env.JAVA_PKG_NAME }} -r -fo
 

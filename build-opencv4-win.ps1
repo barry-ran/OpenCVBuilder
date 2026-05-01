@@ -123,7 +123,7 @@ if ($BuildJava)
 #for opencv-rust
 $genArgs += ('-DWITH_OPENCL=ON');
 
-$OutPutPath = "build-$VsArch-$VsVer-$VsCRT"
+$OutPutPath = "build-$VsArch-$VsVer-$VsCRT-$BuildType"
 
 if (!(Test-Path -Path $OutPutPath))
 {
